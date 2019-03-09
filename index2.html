@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+    </head>
+    <body>
+
+        <div style="position:absolute;top:0;left:0;width=900px;height:800px">
+            <svg id = "mysvg" width = "800" height = "800"></svg>
+        </div>
+
+        <div class = "slider" style = "margin-left:1000px;padding-top:50px;width:800px;height:800px ">
+            <input type = "range" min = "0" max = "2" step="0.1" value = "0.9">
+            </input>
+        </div>
+
+        <script src = "lib/d3.js"></script>
+
+        <script>
+            
+
+            // var newValue = elem.value
+
+            // var rangeValue = function(){
+            //     newValue = elem.value;
+            //     // var target = document.querySelector('.value');
+            //     // target.innerHTML = newValue;
+            //     console.log("dddddd",newValue)
+            //     return newValue
+            // }
+            // elem.addEventListener("input", rangeValue)
+
+        </script>
+
+        <script>
+            var count = 1
+
+            var elem = document.querySelector('input[type="range"]');
+
+            var lineFunction = d3.line()
+                .x(function(d){ return d.x; })
+                .y(function(d){ return d.y; })
+
+            var dataset = [[503, 590],[601, 481],[421, 571],
+                [117, 324],[531, 256],[652, 129],
+                [504, 147],[239, 384],[491, 166]];
+            var svg = d3.select("#mysvg")
+            var circle = svg.selectAll("cirlce")
+                .data(dataset)
+                .enter()
+                .append("circle")
+                .attr("cx", function(d,i){
+                    return d[0]
+                })
+                .attr("cy", function(d,i){
+                    return d[1]
+                })
+                .attr("r",10)
+
+            for(var i = 0; i < dataset.length; i++){
+                
+
+
+                    var mx = dataset[i][0] + 100;
+                    var my = dataset[i][1] + 100;
+                    var lx = dataset[i][0] - 100;
+                    var ly = dataset[i][1] - 100;
+                    if(i == 4){
+                        var data1 = [
+                            {'x': mx+50, 'y': my+50},
+                            {'x': lx-50, 'y': ly-50},
+                        ]   
+                    }
+                    else{
+                        var data1 = [
+                            {'x': mx, 'y': my},
+                            {'x': lx, 'y': ly},
+                        ]
+                    }
+                    // console.log("i",i,dataset[i])
+                    svg.append("path")
+                        .attr("id","mypath")
+                        .attr("d", lineFunction(data1))
+                        .attr("fill", "none")
+                        .attr("stroke", "black")
+            }
+
+            var originalPath = svg.selectAll("#mypath")
+                
+
+            var rangeValue = function(){
+
+                d3.selectAll("#clone").remove()
+                var newValue = elem.value
+                var clonepath = originalPath.select(function(){
+                    return this.parentNode.insertBefore(this.cloneNode(1), this.nextSibling)
+                })
+
+                originalPath
+                    .attr("fill","none")
+                    .attr("stroke","none")
+                    .attr("id","origin")
+
+                clonepath
+                    .attr("id","clone")
+                    .attr("stroke","black")
+                    .each(function(d,i){
+                        var liPoint = []
+                        if(newValue <= 1){
+                            var l = d3.select(this).node().getTotalLength()
+                            // console.log("l",l)
+                            var halfNewValue = newValue/2
+                            liPoint.push(d3.select(this).node().getPointAtLength(l*(0.5-halfNewValue)))
+                            liPoint.push(d3.select(this).node().getPointAtLength(l*(0.5+halfNewValue
+                                )))
+                        }
+                        else{
+                            var l = d3.select(this).node().getTotalLength() * 2
+                            // console.log("l",l)
+                            var halfNewValue = newValue/2
+                            liPoint.push(d3.select(this).node().getPointAtLength(l*(1-halfNewValue)))
+                            liPoint.push(d3.select(this).node().getPointAtLength(l*(1+halfNewValue
+                                )))
+                        }
+                        d3.select(this).attr("d", function(d){
+                            return lineFunction(liPoint)
+                        })
+                        console.log("liPoint",liPoint)
+                        
+                    })
+            }
+            
+            elem.addEventListener("input", rangeValue)
+            
+        </script>
+
+    </body>
+</html>
